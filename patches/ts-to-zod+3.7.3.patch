@@ -1,0 +1,112 @@
+diff --git a/node_modules/ts-to-zod/lib/core/generateZodSchema.js b/node_modules/ts-to-zod/lib/core/generateZodSchema.js
+index 02ff5b0..de928b1 100644
+--- a/node_modules/ts-to-zod/lib/core/generateZodSchema.js
++++ b/node_modules/ts-to-zod/lib/core/generateZodSchema.js
+@@ -126,7 +126,23 @@ function buildZodProperties({ members, zodImportValue: z, sourceFile, dependenci
+     });
+     return properties;
+ }
+-function buildZodPrimitive({ z, typeNode, isOptional, isNullable, isPartial, isRequired, jsDocTags, customJSDocFormatTypes, sourceFile, dependencies, getDependencyName, skipParseJSDoc, }) {
++// decorate builder to allow for schema appending/overriding
++function buildZodPrimitive(opts) {
++    const schema = opts.jsDocTags.schema
++
++    delete opts.jsDocTags.schema
++    const generatedSchema = _buildZodPrimitive(opts);
++    // schema not specified? return generated one
++    if (!schema) return generatedSchema;
++    // schema starts with dot? append it
++    if (schema.startsWith(".")) {
++      return typescript_1.factory.createPropertyAccessExpression(generatedSchema, typescript_1.factory.createIdentifier(schema.slice(1)));
++    }
++
++    // otherwise use schema verbatim
++    return typescript_1.factory.createIdentifier(schema);
++  }
++function _buildZodPrimitive({ z, typeNode, isOptional, isNullable, isPartial, isRequired, jsDocTags, customJSDocFormatTypes, sourceFile, dependencies, getDependencyName, skipParseJSDoc, }) {
+     const zodProperties = (0, jsDocTags_1.jsDocTagToZodProperties)(jsDocTags, customJSDocFormatTypes, isOptional, Boolean(isPartial), Boolean(isRequired), Boolean(isNullable));
+     if (typescript_1.default.isParenthesizedTypeNode(typeNode)) {
+         return buildZodPrimitive({
+@@ -562,8 +578,24 @@ function buildZodPrimitive({ z, typeNode, isOptional, isNullable, isPartial, isR
+  * @param properties An array of flags that should be added as extra property calls such as optional to add .optional()
+  */
+ function buildZodSchema(z, callName, args, properties) {
+-    const zodCall = typescript_1.factory.createCallExpression(typescript_1.factory.createPropertyAccessExpression(typescript_1.factory.createIdentifier(z), typescript_1.factory.createIdentifier(callName)), undefined, args);
+-    return withZodProperties(zodCall, properties);
++    let zodCall;
++    let finalProperties;
++    if (properties && properties.length > 0 && properties[0].identifier === "coerce") {
++        zodCall = typescript_1.factory.createCallExpression(
++            typescript_1.factory.createPropertyAccessExpression(
++                typescript_1.factory.createPropertyAccessExpression(
++                    typescript_1.factory.createIdentifier(z),
++                    typescript_1.factory.createIdentifier("coerce")
++                ),
++                typescript_1.factory.createIdentifier(callName)
++            )
++        , undefined, args);
++        finalProperties = [...properties].slice(1)
++    } else {
++        zodCall = typescript_1.factory.createCallExpression(typescript_1.factory.createPropertyAccessExpression(typescript_1.factory.createIdentifier(z), typescript_1.factory.createIdentifier(callName)), undefined, args);
++        finalProperties = properties
++    }
++    return withZodProperties(zodCall, finalProperties);
+ }
+ function buildZodExtendedSchema(schemaList, args, properties) {
+     let zodCall = typescript_1.factory.createIdentifier(schemaList[0]);
+@@ -627,6 +659,7 @@ function buildZodObject({ typeNode, z, dependencies, sourceFile, getDependencyNa
+             }), true),
+         ]);
+     }
++
+     if (indexSignature) {
+         if (schemaExtensionClauses) {
+             throw new Error("interface with `extends` and index signature are not supported!");
+diff --git a/node_modules/ts-to-zod/lib/core/jsDocTags.js b/node_modules/ts-to-zod/lib/core/jsDocTags.js
+index ed6f7ba..9e30504 100644
+--- a/node_modules/ts-to-zod/lib/core/jsDocTags.js
++++ b/node_modules/ts-to-zod/lib/core/jsDocTags.js
+@@ -43,6 +43,8 @@ const jsDocTagKeys = [
+     "maxLength",
+     "format",
+     "pattern",
++    "coerce",
++    "schema",
+     "elementDescription",
+     "elementMinimum",
+     "elementMaximum",
+@@ -98,6 +100,10 @@ function getJSDocTags(nodeType, sourceFile) {
+                     jsDocTags[tagName] = true;
+                     return;
+                 }
++                if (tagName === "coerce") {
++                    jsDocTags[tagName] = true;
++                    return;
++                }
+                 if (!isJSDocTagKey(tagName) || typeof tag.comment !== "string")
+                     return;
+                 const { value, errorMessage } = parseJsDocComment(tag.comment);
+@@ -153,6 +159,13 @@ function getJSDocTags(nodeType, sourceFile) {
+                         break;
+                     case "strict":
+                         break;
++                    case "coerce":
++                        break;
++                    case "schema":
++                        if (tag.comment) {
++                            jsDocTags[tagName] = tag.comment;
++                        }
++                        break;
+                     default:
+                         tagName;
+                 }
+@@ -210,6 +223,9 @@ function jsDocTagToZodProperties(jsDocTags, customJSDocFormats, isOptional, isPa
+     if (jsDocTags.strict) {
+         zodProperties.push({ identifier: "strict" });
+     }
++    if (jsDocTags.coerce) {
++        zodProperties.push({ identifier: "coerce" });
++    }
+     if (isOptional) {
+         zodProperties.push({
+             identifier: "optional",

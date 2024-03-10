@@ -1,13 +1,29 @@
 {
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "postinstall": "patch-package",
+    "gen:documentation": "tsx src/utils/doc-zod-generator.ts && ts-to-zod --all --skipValidation",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "@hono/node-server": "^1.8.2",
-    "hono": "^4.0.9"
+    "@hono/swagger-ui": "^0.2.1",
+    "@hono/zod-openapi": "^0.9.7",
+    "bcrypt": "^5.1.1",
+    "dayjs": "^1.11.10",
+    "dotenv": "^16.4.5",
+    "hono": "^4.0.10",
+    "http-status": "^1.7.4",
+    "kysely": "^0.27.2",
+    "zod": "^3.22.4",
+    "zod-error": "^1.5.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.11.17",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0",
+    "ts-to-zod": "^3.7.3",
     "tsx": "^3.12.2"
   }
 }
