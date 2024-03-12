@@ -1,5 +1,5 @@
 import { getConfig } from "@/config/config";
-import { loginParamsSchema } from "@/documentation/v1/auth/schema";
+import { loginParamsSchema } from "@/schemas/v1/auth/schemas";
 import * as authService from "@/services/v1/auth/auth.service";
 import * as tokenService from "@/services/v1/auth/token.service";
 import { Handler } from "hono";

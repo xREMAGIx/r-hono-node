@@ -3,7 +3,7 @@ import {
   getProductParamsSchema,
   getProductsParamsSchema,
   updateProductParamsSchema,
-} from "@/documentation/v1/product/schema";
+} from "@/schemas/v1/product/schemas";
 import { ApiError } from "@/middlewares/apiError";
 import * as productService from "@/services/v1/product/product.service";
 import { Handler } from "hono";

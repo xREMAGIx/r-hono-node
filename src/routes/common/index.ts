@@ -1,6 +1,6 @@
 import { Env, Hono, Schema } from "hono";
 
-import { route as imageRoute } from "@/routes/common/image.route";
+import { route as fileRoute } from "@/routes/common/file.route";
 
 const BASE_PATH = "api";
 
@@ -11,7 +11,7 @@ interface RouteType {
 
 export const commonApiRoutes: RouteType[] = [
   {
-    path: `/${BASE_PATH}/image`,
-    route: imageRoute,
+    path: `/${BASE_PATH}/file`,
+    route: fileRoute,
   },
 ];

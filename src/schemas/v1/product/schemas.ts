@@ -4,7 +4,7 @@ import { z } from "zod";
 import {
   queryPaginationDataSchema,
   queryPaginationOptionsSchema,
-} from "../../general";
+} from "./../../general";
 
 export const productDataSchema = z.object({
   id: z.number(),

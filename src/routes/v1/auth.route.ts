@@ -3,7 +3,7 @@ import {
   loginDataSchema,
   loginParamsSchema,
   profileDataSchema,
-} from "@/documentation/v1/auth/schema";
+} from "@/schemas/v1/auth/schemas";
 import { auth } from "@/middlewares/auth";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 
