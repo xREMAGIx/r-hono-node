@@ -8,7 +8,7 @@ import {
   getProductsDataSchema,
   getProductsParamsSchema,
   updateProductParamsSchema,
-} from "@/documentation/v1/product/schema";
+} from "@/schemas/v1/product/schemas";
 
 export const route = new OpenAPIHono();
 

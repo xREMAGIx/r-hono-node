@@ -1,31 +1,17 @@
 import { promises, writeFile } from "node:fs";
 import path from "node:path";
+import { clearFolder, getFiles } from "./custom-fs";
 
-const documentationPath = path.join(__dirname, "../documentation/");
-const servicePath = path.join(__dirname, "../services/");
-
-async function getFiles(dir: string): Promise<string[]> {
-  const dirents = await promises.readdir(dir, { withFileTypes: true });
-  const files = await Promise.all(
-    dirents.map((dirent) => {
-      const res = path.resolve(dir, dirent.name);
-      return dirent.isDirectory() ? getFiles(res) : res;
-    })
-  );
-  return Array.prototype.concat(...files);
-}
-
-async function clearDocumentFolder(directory: string): Promise<void> {
-  await promises.rm(directory, { recursive: true });
-  await promises.mkdir(directory);
-}
+const schemasPath = path.join(process.cwd(), "src/schemas/");
+const servicePath = path.join(process.cwd(), "src/services/");
 
 async function run() {
   try {
     //* Clear document folder
-    await clearDocumentFolder(documentationPath);
+    await clearFolder(schemasPath);
+    await promises.mkdir(schemasPath);
 
-    //* Get types of services for converting to documentation
+    //* Get types of services for converting to schemas
     const serviceFiles = await getFiles(servicePath);
     const serviceConvertList = serviceFiles.reduce(
       (
@@ -43,7 +29,7 @@ async function run() {
             {
               name: "general",
               input: `src/services/${file}`,
-              output: `src/documentation/${file}`,
+              output: `src/schemas/${file}`,
             },
           ];
         }
@@ -57,7 +43,7 @@ async function run() {
           {
             name: fileName,
             input: `src/services/${file}`,
-            output: `src/documentation/${folderVersion}/${folderName}/schema.ts`,
+            output: `src/schemas/${folderVersion}/${folderName}/schemas.ts`,
           },
         ];
       },
@@ -71,7 +57,7 @@ async function run() {
     const convertString = serviceConvertString;
 
     //* Write to ts-to-zod.config.js
-    const configFilePath = path.join(__dirname, "../../ts-to-zod.config.js");
+    const configFilePath = path.join(process.cwd(), "ts-to-zod.config.js");
     writeFile(
       configFilePath,
       `

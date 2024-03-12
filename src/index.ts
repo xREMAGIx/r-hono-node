@@ -5,8 +5,10 @@ import dotenv from "dotenv";
 import httpStatus from "http-status";
 import { ApiError } from "./middlewares/apiError";
 import { errorHandler } from "./middlewares/error";
-import { apiRoutes as v1ApiRoutes } from "./routes/v1";
 import { commonApiRoutes } from "./routes/common";
+import { apiRoutes as v1ApiRoutes } from "./routes/v1";
+import { cors } from "hono/cors";
+import { serveStatic } from "@hono/node-server/serve-static";
 
 dotenv.config();
 
@@ -17,6 +19,8 @@ app.notFound(() => {
 });
 
 app.onError(errorHandler);
+
+app.use("/api/*", cors());
 
 for (let i = 0; i < commonApiRoutes.length; i++) {
   app.route(`${commonApiRoutes[i].path}`, commonApiRoutes[i].route);
@@ -41,10 +45,17 @@ app.openAPIRegistry.registerComponent(
     type: "http",
     scheme: "bearer",
     bearerFormat: "JWT",
-  }
+  },
 );
 
 app.get("/documentation", swaggerUI({ url: "/doc" }));
+
+app.use(
+  "/public/*",
+  serveStatic({
+    root: "src",
+  }),
+);
 
 const port = 3000;
 console.log(`Server is running on port ${port}`);
