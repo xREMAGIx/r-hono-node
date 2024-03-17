@@ -1,14 +1,14 @@
 import { serve } from "@hono/node-server";
+import { serveStatic } from "@hono/node-server/serve-static";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import dotenv from "dotenv";
+import { cors } from "hono/cors";
 import httpStatus from "http-status";
 import { ApiError } from "./middlewares/apiError";
 import { errorHandler } from "./middlewares/error";
 import { commonApiRoutes } from "./routes/common";
 import { apiRoutes as v1ApiRoutes } from "./routes/v1";
-import { cors } from "hono/cors";
-import { serveStatic } from "@hono/node-server/serve-static";
 
 dotenv.config();
 

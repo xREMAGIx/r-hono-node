@@ -2,6 +2,11 @@
   "scripts": {
     "postinstall": "patch-package",
     "gen:schema": "tsx src/utils/doc-zod-generator.ts && ts-to-zod --all --skipValidation",
+    "gen:migration": "hygen migrations new",
+    "gen:api:module": "hygen api module",
+    "migrate:lastest": "tsx src/utils/migrate.ts lastest",
+    "migrate:down": "tsx src/utils/migrate.ts down",
+    "migrate:none": "tsx src/utils/migrate.ts none",
     "dev": "tsx watch src/index.ts",
     "build": "tsc"
   },
@@ -16,12 +21,16 @@
     "http-status": "^1.7.4",
     "kysely": "^0.27.2",
     "mime": "^4.0.1",
+    "pg": "^8.11.3",
     "zod": "^3.22.4",
     "zod-error": "^1.5.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.11.17",
+    "@types/pg": "^8.11.2",
+    "hygen": "^6.2.11",
+    "kysely-codegen": "^0.13.1",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
     "ts-to-zod": "^3.7.3",
